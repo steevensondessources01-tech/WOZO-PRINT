@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOZOPRINT - Gestion Imprimerie</title>
+    <meta name="theme-color" content="#21B5DE">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #21B5DE 0%, #1A8FB8 100%); min-height: 100vh; padding: 15px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: #FFFFFF; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; border: 3px solid #21B5DE; }
+        header { background: #21B5DE; color: white; padding: 20px; text-align: center; border-bottom: 3px solid #FFFFFF; }
+        .logo { font-size: 1.8em; font-weight: 800; }
+        .tabs { display: flex; background: #E8F7FC; }
+        .tab { flex: 1; padding: 15px; text-align: center; border: none; font-weight: 600; color: #1A8FB8; cursor: pointer; font-size: 0.9em; }
+        .tab.active { background: #21B5DE; color: white; }
+        .tab-content { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; color: #1A8FB8; font-weight: 600; margin-bottom: 8px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #D1EFF9; border-radius: 8px; font-size: 16px; outline: none; }
+        .services-section { background: #F8FDFF; border: 2px solid #E8F7FC; border-radius: 10px; padding: 15px; margin: 20px 0; }
+        .service-row { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #E8F7FC; }
+        .quantity-control { display: flex; align-items: center; gap: 5px; }
+        .qty-btn { background: #21B5DE; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+        .qty-input { width: 40px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
+        .cart-total { background: #21B5DE; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 800; margin-top: 15px; }
+        .btn-primary { background: #21B5DE; color: white; border: none; font-weight: bold; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1.1em; }
+        .btn-secondary { background: white; color: #21B5DE; border: 1px solid #21B5DE; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #21B5DE; color: white; padding: 10px; text-align: left; font-size: 0.8em; }
+        td { padding: 10px; border-bottom: 1px solid #E8F7FC; font-size: 0.85em; }
+        .hidden { display: none !important; }
+        .card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #E8F7FC; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header><div class="logo">WOZOPRINT</div><p>Gestion Professionnelle</p></header>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('ventes')">🛒 Ventes</button>
+            <button class="tab" onclick="showTab('repartition')">📊 Rapports</button>
+            <button class="tab" onclick="showTab('clients')">👥 Clients</button>
+            <button class="tab" onclick="showTab('backup')">⚙️ Options</button>
+        </div>
+        
+        <div id="ventes" class="tab-content">
+            <div class="form-group">
+                <label>👤 Client & Téléphone</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="clientName" placeholder="Nom du client">
+                    <input type="tel" id="clientPhone" placeholder="Téléphone">
+                </div>
+            </div>
+            <div class="services-section"><label>🛠️ Services</label><div id="servicesContainer"></div></div>
+            <div class="form-group">
+                <label>🚚 Options & Remise</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="deliveryOption" onchange="updateTotal()">
+                        <option value="0">Pas de livraison</option>
+                        <option value="25">Standard (+25 G)</option>
+                        <option value="50">Express (+50 G)</option>
+                    </select>
+                    <input type="number" id="discount" value="0" placeholder="Remise %" onchange="updateTotal()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>📝 Instructions</label>
+                <textarea id="notes" rows="2" placeholder="Ex: Bristol bleu, recto-verso..."></textarea>
+            </div>
+            <div class="cart-total" id="cartTotal">0 Gdes</div>
+            <button class="btn-primary" onclick="createOrder()">ENREGISTRER LA COMMANDE</button>
+
+            <h3 style="margin-top: 30px; color: #1A8FB8; border-bottom: 2px solid #E8F7FC; padding-bottom: 5px;">Historique du jour</h3>
+            <div id="day-summary-container"></div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>Heure</th><th>Client</th><th>Services</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead>
+                    <tbody id="ordersList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="repartition" class="tab-content hidden"><div id="repartitionContainer"></div></div>
+        <div id="clients" class="tab-content hidden"><h3>Fidélité Clients</h3><div id="clientsContainer"></div></div>
+        <div id="backup" class="tab-content hidden">
+            <div style="text-align: center; padding: 20px;">
+                <button class="btn-primary" onclick="exportData()" style="background:#4BC0C0">Sauvegarder les données</button>
+                <button class="btn-secondary" onclick="importData()" style="margin-top: 15px; width: 100%;">Restaurer un fichier</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVICES = [
+            { id: 'copie', name: 'Copie simple', price: 5, icon: '📄' },
+            { id: 'noirblanc', name: 'Impression N&B', price: 15, icon: '⚫' },
+            { id: 'couleur', name: 'Impression couleur', price: 25, icon: '🎨' },
+            { id: 'reliure', name: 'Reliure', price: 20, icon: '📎' },
+            { id: 'plastification', name: 'Plastification', price: 30, icon: '🛡️' },
+            { id: 'bristol', name: 'Page Couverture (Bristol)', price: 50, icon: '📑' },
+            { id: 'saisie', name: 'Saisie / Traitement (Page)', price: 50, icon: '⌨️' }
+        ];
+
+        let selectedServices = [];
+        let orders = JSON.parse(localStorage.getItem('wozoprint_orders')) || [];
+        let clients = JSON.parse(localStorage.getItem('wozoprint_clients')) || [];
+
+        document.addEventListener('DOMContentLoaded', () => { initServices(); loadOrders(); });
+
+        function initServices() {
+            const container = document.getElementById('servicesContainer');
+            SERVICES.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'service-row';
+                div.innerHTML = `<input type="checkbox" style="width:20px" id="check_${s.id}" onchange="toggleService('${s.id}')">
+                    <div style="flex:1"><strong>${s.icon} ${s.name}</strong><br><small>${s.price} Gdes</small></div>
+                    <div class="quantity-control hidden" id="qty_${s.id}">
+                        <button class="qty-btn" onclick="changeQty('${s.id}', -1)">-</button>
+                        <input type="number" class="qty-input" value="1" id="input_${s.id}" readonly>
+                        <button class="qty-btn" onclick="changeQty('${s.id}', 1)">+</button>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleService(id) {
+            const check = document.getElementById(`check_${id}`);
+            const qtyDiv = document.getElementById(`qty_${id}`);
+            if (check.checked) {
+                selectedServices.push({ ...SERVICES.find(s => s.id === id), quantity: 1 });
+                qtyDiv.classList.remove('hidden');
+            } else {
+                selectedServices = selectedServices.filter(s => s.id !== id);
+                qtyDiv.classList.add('hidden');
+            }
+            updateTotal();
+        }
+
+        function changeQty(id, delta) {
+            const s = selectedServices.find(s => s.id === id);
+            if (s) { s.quantity = Math.max(1, s.quantity + delta); document.getElementById(`input_${id}`).value = s.quantity; updateTotal(); }
+        }
+
+        function updateTotal() {
+            let total = selectedServices.reduce((acc, s) => acc + (s.price * s.quantity), 0);
+            total += parseInt(document.getElementById('deliveryOption').value);
+            total *= (1 - (parseInt(document.getElementById('discount').value) || 0) / 100);
+            document.getElementById('cartTotal').textContent = Math.round(total) + ' Gdes';
+            return Math.round(total);
+        }
+
+        function createOrder() {
+            const name = document.getElementById('clientName').value;
+            if (!name || !selectedServices.length) return alert("Nom et service requis !");
+            const order = {
+                id: Date.now(), date: new Date().toISOString(), clientName: name, clientPhone: document.getElementById('clientPhone').value || 'N/A',
+                services: selectedServices.map(s => ({ serviceName: s.name, serviceIcon: s.icon, price: s.price, quantity: s.quantity })),
+                total: updateTotal(), status: 'À livrer', notes: document.getElementById('notes').value
+            };
+            orders.push(order);
+            localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
+            updateClientData(name, order.clientPhone, order.total);
+            location.reload();
+        }
+
+        function loadOrders() {
+            const container = document.getElementById('ordersList');
+            const summaryContainer = document.getElementById('day-summary-container');
+            const today = new Date().toISOString().split('T')[0];
+            const todayOrders = orders.filter(o => o.date.startsWith(today)).reverse();
+            
+            const totalCash = todayOrders.reduce((sum, o) => sum + o.total, 0);
+            summaryContainer.innerHTML = todayOrders.length > 0 ? `<div style="background: #E8F7FC; padding: 12px; border-radius: 8px; margin: 10px 0; color: #1A8FB8; font-weight: bold; display: flex; justify-content: space-between; border: 1px solid #21B5DE;">
+                <span>📈 Ventes : ${todayOrders.length}</span><span>💰 Total : ${Math.round(totalCash)} Gdes</span></div>` : "";
+
+            container.innerHTML = todayOrders.length ? todayOrders.map(o => `<tr>
+                <td>${new Date(o.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                <td><strong>${o.clientName}</strong></td>
+                <td>${o.services.map(s => `${s.serviceIcon} ${s.serviceName} (x${s.quantity})`).join('<br>')}</td>
+                <td>${o.total} G</td>
+                <td><select onchange="updateStatus(${o.id}, this.value)"><option ${o.status==='À livrer'?'selected':''}>À livrer</option><option ${o.status==='Payé'?'selected':''}>Payé</option></select></td>
+                <td><button onclick="deleteOrder(${o.id})">❌</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">Aucune vente</td></tr>';
+        }
+
+        function updateStatus(id, status) {
+            const o = orders.find(o => o.id === id);
+            if (o.status !== 'Payé' && status === 'Payé') {
+                const history = JSON.parse(localStorage.getItem('wozoprint_repartition')) || [];
+                history.push({ date: new Date().toISOString(), amount: o.total, repartition: { amortissement: o.total*0.1, produits: o.total*0.3, tante: o.total*0.15, imprevu: o.total*0.05, mapart: o.total*0.4 }});
+                localStorage.setItem('wozoprint_repartition', JSON.stringify(history));
+            }
+            o.status = status;
+            localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
+        }
+
+        function loadRepartition() {
+            const history = JSON.parse(localStorage.getItem('wozoprint_repartition')) || [];
+            const t = history.reduce((acc, c) => { acc.total += c.amount; acc.a += c.repartition.amortissement; acc.p += c.repartition.produits; acc.h += c.repartition.tante; acc.i += c.repartition.imprevu; acc.m += c.repartition.mapart; return acc; }, {total:0, a:0, p:0, h:0, i:0, m:0});
+            document.getElementById('repartitionContainer').innerHTML = `<h2 style="text-align:center;color:#1A8FB8;margin-bottom:15px;">Total: ${Math.round(t.total)} G</h2>
+                <div style="max-width:200px;margin:0 auto 20px;"><canvas id="repChart"></canvas></div>
+                <div class="card">🖨️ Amortissement (10%): ${Math.round(t.a)} G</div><div class="card">📦 Produits (30%): ${Math.round(t.p)} G</div>
+                <div class="card">🏠 Logement/Elec (15%): ${Math.round(t.h)} G</div><div class="card">⚠️ Imprévus (5%): ${Math.round(t.i)} G</div>
+                <div class="card" style="background:#21B5DE;color:white;"><strong>💰 MA PART (40%): ${Math.round(t.m)} G</strong></div>`;
+            new Chart(document.getElementById('repChart'), { type: 'doughnut', data: { datasets: [{ data: [t.a, t.p, t.h, t.i, t.m], backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#21B5DE'] }] }, options: { plugins: { legend: { display: false } } } });
+        }
+
+        function showTab(name) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(name).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            if (name === 'repartition') loadRepartition();
+            if (name === 'clients') loadClients();
+        }
+
+        function updateClientData(name, phone, amount) {
+            let c = clients.find(cl => cl.name === name);
+            if (!c) { clients.push({ name, phone, total: amount, count: 1 }); } else { c.total += amount; c.count += 1; }
+            localStorage.setItem('wozoprint_clients', JSON.stringify(clients));
+        }
+
+        function loadClients() {
+            document.getElementById('clientsContainer').innerHTML = clients.sort((a,b) => b.total - a.total).map(c => `<div class="card"><strong>${c.name}</strong> - ${c.total} Gdes (${c.count} achats)</div>`).join('');
+        }
+
+        function deleteOrder(id) { if(confirm("Supprimer ?")) { orders = orders.filter(o => o.id !== id); localStorage.setItem('wozoprint_orders', JSON.stringify(orders)); loadOrders(); } }
+
+        function exportData() {
+            const data = { orders, clients, repartition: JSON.parse(localStorage.getItem('wozoprint_repartition')) };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const a = document.createElement('a');
+            const date = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
+            const heure = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}).replace(':', 'h');
+            a.href = URL.createObjectURL(blob);
+            a.download = `wozoprint_compta_${date}_${heure}.json`;
+            a.click();
+        }
+
+        function importData() {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+            input.onchange = e => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const d = JSON.parse(ev.target.result);
+                    if (confirm("Importer les données ?")) {
+                        orders = d.orders; clients = d.clients;
+                        localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
+                        localStorage.setItem('wozoprint_clients', JSON.stringify(clients));
+                        localStorage.setItem('wozoprint_repartition', JSON.stringify(d.repartition || []));
+                        location.reload();
+                    }
+                };
+                reader.readAsText(e.target.files[0]);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
