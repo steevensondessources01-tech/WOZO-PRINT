@@ -6,7 +6,6 @@
     <title>WOZOPRINT - Gestion Imprimerie</title>
     <meta name="theme-color" content="#21B5DE">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: linear-gradient(135deg, #21B5DE 0%, #1A8FB8 100%); min-height: 100vh; padding: 15px; color: #333; }
@@ -24,7 +23,7 @@
         .service-row { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #E8F7FC; }
         .quantity-control { display: flex; align-items: center; gap: 5px; }
         .qty-btn { background: #21B5DE; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-        .qty-input { width: 40px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
+        .qty-input { width: 60px; text-align: center; padding: 5px; border: 1px solid #21B5DE; border-radius: 5px; font-weight: bold; }
         .cart-total { background: #21B5DE; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 800; margin-top: 15px; }
         .btn-primary { background: #21B5DE; color: white; border: none; font-weight: bold; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1.1em; }
         .btn-secondary { background: white; color: #21B5DE; border: 1px solid #21B5DE; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
@@ -38,59 +37,26 @@
 <body>
     <div class="container">
         <header><div class="logo">WOZOPRINT</div><p>Gestion Professionnelle</p></header>
-        
         <div class="tabs">
             <button class="tab active" onclick="showTab('ventes')">🛒 Ventes</button>
             <button class="tab" onclick="showTab('repartition')">📊 Rapports</button>
             <button class="tab" onclick="showTab('clients')">👥 Clients</button>
             <button class="tab" onclick="showTab('backup')">⚙️ Options</button>
         </div>
-        
         <div id="ventes" class="tab-content">
-            <div class="form-group">
-                <label>👤 Client & Téléphone</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="clientName" placeholder="Nom du client">
-                    <input type="tel" id="clientPhone" placeholder="Téléphone">
-                </div>
-            </div>
+            <div class="form-group"><label>👤 Client & Téléphone</label><div style="display:flex; gap:10px;"><input type="text" id="clientName" placeholder="Nom du client"><input type="tel" id="clientPhone" placeholder="Téléphone"></div></div>
             <div class="services-section"><label>🛠️ Services</label><div id="servicesContainer"></div></div>
-            <div class="form-group">
-                <label>🚚 Options & Remise</label>
-                <div style="display:flex; gap:10px;">
-                    <select id="deliveryOption" onchange="updateTotal()">
-                        <option value="0">Pas de livraison</option>
-                        <option value="25">Standard (+25 G)</option>
-                        <option value="50">Express (+50 G)</option>
-                    </select>
-                    <input type="number" id="discount" value="0" placeholder="Remise %" onchange="updateTotal()">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>📝 Instructions</label>
-                <textarea id="notes" rows="2" placeholder="Ex: Bristol bleu, recto-verso..."></textarea>
-            </div>
+            <div class="form-group"><label>🚚 Options & Remise</label><div style="display:flex; gap:10px;"><select id="deliveryOption" onchange="updateTotal()"><option value="0">Pas de livraison</option><option value="25">Standard (+25 G)</option><option value="50">Express (+50 G)</option></select><input type="number" id="discount" value="0" placeholder="Remise %" onchange="updateTotal()"></div></div>
+            <div class="form-group"><label>📝 Instructions</label><textarea id="notes" rows="2" placeholder="Instructions particulières..."></textarea></div>
             <div class="cart-total" id="cartTotal">0 Gdes</div>
             <button class="btn-primary" onclick="createOrder()">ENREGISTRER LA COMMANDE</button>
-
-            <h3 style="margin-top: 30px; color: #1A8FB8; border-bottom: 2px solid #E8F7FC; padding-bottom: 5px;">Historique du jour</h3>
+            <h3 style="margin-top: 30px; color: #1A8FB8;">Historique du jour</h3>
             <div id="day-summary-container"></div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>Heure</th><th>Client</th><th>Services</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead>
-                    <tbody id="ordersList"></tbody>
-                </table>
-            </div>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Heure</th><th>Client</th><th>Services</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead><tbody id="ordersList"></tbody></table></div>
         </div>
-
         <div id="repartition" class="tab-content hidden"><div id="repartitionContainer"></div></div>
         <div id="clients" class="tab-content hidden"><h3>Fidélité Clients</h3><div id="clientsContainer"></div></div>
-        <div id="backup" class="tab-content hidden">
-            <div style="text-align: center; padding: 20px;">
-                <button class="btn-primary" onclick="exportData()" style="background:#4BC0C0">Sauvegarder les données</button>
-                <button class="btn-secondary" onclick="importData()" style="margin-top: 15px; width: 100%;">Restaurer un fichier</button>
-            </div>
-        </div>
+        <div id="backup" class="tab-content hidden"><div style="text-align: center; padding: 20px;"><button class="btn-primary" onclick="exportData()" style="background:#4BC0C0">Sauvegarder les données</button><button class="btn-secondary" onclick="importData()" style="margin-top: 15px; width: 100%;">Restaurer un fichier</button></div></div>
     </div>
 
     <script>
@@ -119,7 +85,7 @@
                     <div style="flex:1"><strong>${s.icon} ${s.name}</strong><br><small>${s.price} Gdes</small></div>
                     <div class="quantity-control hidden" id="qty_${s.id}">
                         <button class="qty-btn" onclick="changeQty('${s.id}', -1)">-</button>
-                        <input type="number" class="qty-input" value="1" id="input_${s.id}" readonly>
+                        <input type="number" class="qty-input" value="1" id="input_${s.id}" oninput="manualQty('${s.id}', this.value)">
                         <button class="qty-btn" onclick="changeQty('${s.id}', 1)">+</button>
                     </div>`;
                 container.appendChild(div);
@@ -141,7 +107,19 @@
 
         function changeQty(id, delta) {
             const s = selectedServices.find(s => s.id === id);
-            if (s) { s.quantity = Math.max(1, s.quantity + delta); document.getElementById(`input_${id}`).value = s.quantity; updateTotal(); }
+            if (s) { 
+                s.quantity = Math.max(1, s.quantity + delta); 
+                document.getElementById(`input_${id}`).value = s.quantity; 
+                updateTotal(); 
+            }
+        }
+
+        function manualQty(id, value) {
+            const s = selectedServices.find(s => s.id === id);
+            if (s) {
+                s.quantity = Math.max(1, parseInt(value) || 1);
+                updateTotal();
+            }
         }
 
         function updateTotal() {
@@ -171,18 +149,9 @@
             const summaryContainer = document.getElementById('day-summary-container');
             const today = new Date().toISOString().split('T')[0];
             const todayOrders = orders.filter(o => o.date.startsWith(today)).reverse();
-            
             const totalCash = todayOrders.reduce((sum, o) => sum + o.total, 0);
-            summaryContainer.innerHTML = todayOrders.length > 0 ? `<div style="background: #E8F7FC; padding: 12px; border-radius: 8px; margin: 10px 0; color: #1A8FB8; font-weight: bold; display: flex; justify-content: space-between; border: 1px solid #21B5DE;">
-                <span>📈 Ventes : ${todayOrders.length}</span><span>💰 Total : ${Math.round(totalCash)} Gdes</span></div>` : "";
-
-            container.innerHTML = todayOrders.length ? todayOrders.map(o => `<tr>
-                <td>${new Date(o.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                <td><strong>${o.clientName}</strong></td>
-                <td>${o.services.map(s => `${s.serviceIcon} ${s.serviceName} (x${s.quantity})`).join('<br>')}</td>
-                <td>${o.total} G</td>
-                <td><select onchange="updateStatus(${o.id}, this.value)"><option ${o.status==='À livrer'?'selected':''}>À livrer</option><option ${o.status==='Payé'?'selected':''}>Payé</option></select></td>
-                <td><button onclick="deleteOrder(${o.id})">❌</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">Aucune vente</td></tr>';
+            summaryContainer.innerHTML = todayOrders.length > 0 ? `<div style="background: #E8F7FC; padding: 12px; border-radius: 8px; margin: 10px 0; color: #1A8FB8; font-weight: bold; display: flex; justify-content: space-between; border: 1px solid #21B5DE;"><span>📈 Ventes : ${todayOrders.length}</span><span>💰 Total : ${Math.round(totalCash)} Gdes</span></div>` : "";
+            container.innerHTML = todayOrders.length ? todayOrders.map(o => `<tr><td>${new Date(o.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td><td><strong>${o.clientName}</strong></td><td>${o.services.map(s => `${s.serviceIcon} ${s.serviceName} (x${s.quantity})`).join('<br>')}</td><td>${o.total} G</td><td><select onchange="updateStatus(${o.id}, this.value)"><option ${o.status==='À livrer'?'selected':''}>À livrer</option><option ${o.status==='Payé'?'selected':''}>Payé</option></select></td><td><button onclick="deleteOrder(${o.id})">❌</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999">Aucune vente</td></tr>';
         }
 
         function updateStatus(id, status) {
@@ -199,11 +168,7 @@
         function loadRepartition() {
             const history = JSON.parse(localStorage.getItem('wozoprint_repartition')) || [];
             const t = history.reduce((acc, c) => { acc.total += c.amount; acc.a += c.repartition.amortissement; acc.p += c.repartition.produits; acc.h += c.repartition.tante; acc.i += c.repartition.imprevu; acc.m += c.repartition.mapart; return acc; }, {total:0, a:0, p:0, h:0, i:0, m:0});
-            document.getElementById('repartitionContainer').innerHTML = `<h2 style="text-align:center;color:#1A8FB8;margin-bottom:15px;">Total: ${Math.round(t.total)} G</h2>
-                <div style="max-width:200px;margin:0 auto 20px;"><canvas id="repChart"></canvas></div>
-                <div class="card">🖨️ Amortissement (10%): ${Math.round(t.a)} G</div><div class="card">📦 Produits (30%): ${Math.round(t.p)} G</div>
-                <div class="card">🏠 Logement/Elec (15%): ${Math.round(t.h)} G</div><div class="card">⚠️ Imprévus (5%): ${Math.round(t.i)} G</div>
-                <div class="card" style="background:#21B5DE;color:white;"><strong>💰 MA PART (40%): ${Math.round(t.m)} G</strong></div>`;
+            document.getElementById('repartitionContainer').innerHTML = `<h2 style="text-align:center;color:#1A8FB8;margin-bottom:15px;">Total: ${Math.round(t.total)} G</h2><div style="max-width:200px;margin:0 auto 20px;"><canvas id="repChart"></canvas></div><div class="card">🖨️ Amortissement: ${Math.round(t.a)} G</div><div class="card">📦 Produits: ${Math.round(t.p)} G</div><div class="card">🏠 Tante: ${Math.round(t.h)} G</div><div class="card">💰 MA PART: ${Math.round(t.m)} G</div>`;
             new Chart(document.getElementById('repChart'), { type: 'doughnut', data: { datasets: [{ data: [t.a, t.p, t.h, t.i, t.m], backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#21B5DE'] }] }, options: { plugins: { legend: { display: false } } } });
         }
 
@@ -222,36 +187,23 @@
             localStorage.setItem('wozoprint_clients', JSON.stringify(clients));
         }
 
-        function loadClients() {
-            document.getElementById('clientsContainer').innerHTML = clients.sort((a,b) => b.total - a.total).map(c => `<div class="card"><strong>${c.name}</strong> - ${c.total} Gdes (${c.count} achats)</div>`).join('');
-        }
-
+        function loadClients() { document.getElementById('clientsContainer').innerHTML = clients.sort((a,b) => b.total - a.total).map(c => `<div class="card"><strong>${c.name}</strong> - ${c.total} Gdes (${c.count} achats)</div>`).join(''); }
         function deleteOrder(id) { if(confirm("Supprimer ?")) { orders = orders.filter(o => o.id !== id); localStorage.setItem('wozoprint_orders', JSON.stringify(orders)); loadOrders(); } }
-
         function exportData() {
             const data = { orders, clients, repartition: JSON.parse(localStorage.getItem('wozoprint_repartition')) };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a');
-            const date = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
-            const heure = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}).replace(':', 'h');
-            a.href = URL.createObjectURL(blob);
-            a.download = `wozoprint_compta_${date}_${heure}.json`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wozoprint_compta.json`; a.click();
         }
-
         function importData() {
             const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
             input.onchange = e => {
                 const reader = new FileReader();
                 reader.onload = ev => {
                     const d = JSON.parse(ev.target.result);
-                    if (confirm("Importer les données ?")) {
-                        orders = d.orders; clients = d.clients;
-                        localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
-                        localStorage.setItem('wozoprint_clients', JSON.stringify(clients));
-                        localStorage.setItem('wozoprint_repartition', JSON.stringify(d.repartition || []));
-                        location.reload();
-                    }
+                    localStorage.setItem('wozoprint_orders', JSON.stringify(d.orders));
+                    localStorage.setItem('wozoprint_clients', JSON.stringify(d.clients));
+                    localStorage.setItem('wozoprint_repartition', JSON.stringify(d.repartition || []));
+                    location.reload();
                 };
                 reader.readAsText(e.target.files[0]);
             };
