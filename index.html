@@ -24,7 +24,7 @@
         .service-row { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #E8F7FC; }
         .quantity-control { display: flex; align-items: center; gap: 5px; }
         .qty-btn { background: #21B5DE; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-        .qty-input { width: 40px; text-align: center; padding: 5px; border: none; background: transparent; font-weight: bold; }
+        .qty-input { width: 70px; text-align: center; padding: 5px; border: 2px solid #D1EFF9; border-radius: 5px; font-weight: bold; }
         .cart-total { background: #21B5DE; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 800; margin-top: 15px; }
         .btn-primary { background: #21B5DE; color: white; border: none; font-weight: bold; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1.1em; }
         .btn-secondary { background: white; color: #21B5DE; border: 1px solid #21B5DE; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
@@ -50,8 +50,56 @@
         .service-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
         .service-stat-card { background: white; border: 2px solid #E8F7FC; border-radius: 10px; padding: 15px; text-align: center; }
         .filter-active { background: #21B5DE !important; color: white !important; }
+        
+        /* Styles pour le mode sombre */
+        .dark-mode { background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%); color: #FFFFFF; }
+        .dark-mode .container { background: #0F3460; color: #FFFFFF; border-color: #4BC0C0; }
+        .dark-mode header { background: #0F3460; }
+        .dark-mode .tabs { background: #16213E; }
+        .dark-mode .tab { color: #E8F7FC; }
+        .dark-mode .tab.active { background: #0F3460; }
+        .dark-mode input, .dark-mode select, .dark-mode textarea { 
+            background: #16213E; 
+            color: #FFFFFF; 
+            border-color: #0F3460; 
+        }
+        .dark-mode .services-section { background: #16213E; border-color: #0F3460; }
+        .dark-mode .service-row { border-color: #0F3460; }
+        .dark-mode .cart-total { background: #0F3460; }
+        .dark-mode .btn-primary { background: #0F3460; }
+        .dark-mode .btn-secondary { background: #16213E; color: #E8F7FC; border-color: #0F3460; }
+        .dark-mode .card { background: #16213E; border-color: #0F3460; }
+        .dark-mode .autocomplete-list { background: #16213E; border-color: #0F3460; color: #FFFFFF; }
+        .dark-mode .autocomplete-item:hover { background: #0F3460; }
+        .dark-mode .modal-content { background: #16213E; border-color: #0F3460; color: #FFFFFF; }
+        .dark-mode .stat-card { background: linear-gradient(135deg, #0F3460, #1A1A2E); }
+        .dark-mode .service-stat-card { background: #16213E; border-color: #0F3460; }
+        .dark-mode table th { background: #0F3460; }
+        .dark-mode table td { border-color: #0F3460; }
+        
+        /* Bouton mode sombre */
+        .theme-toggle { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: #21B5DE; 
+            color: white; 
+            border: none; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            z-index: 1000;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        .dark-mode .theme-toggle { background: #0F3460; }
+        
         @media print {
-            .tabs, button, input, select, textarea { display: none !important; }
+            .tabs, button, input, select, textarea, .theme-toggle { display: none !important; }
             .tab-content { display: block !important; }
             body { background: white; }
             .container { box-shadow: none; border: none; }
@@ -59,6 +107,9 @@
     </style>
 </head>
 <body>
+    <!-- Bouton mode sombre -->
+    <button class="theme-toggle" onclick="toggleDarkMode()" id="themeToggle">🌙</button>
+    
     <div class="container">
         <header><div class="logo">WOZOPRINT</div><p>Gestion Professionnelle</p></header>
         
@@ -74,11 +125,13 @@
             <div class="form-group">
                 <label>👤 Client & Téléphone</label>
                 <div style="display:flex; gap:10px; position:relative;">
-                    <div style="flex:1; position:relative;">
-                        <input type="text" id="clientName" placeholder="Nom du client" autocomplete="off">
+                    <div style="flex:3; position:relative;">
+                        <input type="text" id="clientName" placeholder="Nom du client" autocomplete="off" style="padding: 14px; font-size: 16px;">
                         <div id="autocompleteList" class="autocomplete-list" style="display:none;"></div>
                     </div>
-                    <input type="tel" id="clientPhone" placeholder="Téléphone">
+                    <div style="flex:2;">
+                        <input type="tel" id="clientPhone" placeholder="Téléphone" style="padding: 14px; font-size: 16px;">
+                    </div>
                 </div>
             </div>
             <div class="services-section"><label>🛠️ Services</label><div id="servicesContainer"></div></div>
@@ -114,6 +167,13 @@
                 <button class="btn-secondary" onclick="filterOrders('pending')">À livrer</button>
                 <button class="btn-secondary" onclick="filterOrders('paid')">Payé</button>
                 <input type="text" id="searchOrder" placeholder="🔍 Rechercher..." style="flex:1; min-width:200px; padding:8px; border:2px solid #D1EFF9; border-radius:8px;">
+                <select id="searchFilter" style="padding:8px; border:2px solid #D1EFF9; border-radius:8px;">
+                    <option value="all">Tout</option>
+                    <option value="client">Client</option>
+                    <option value="phone">Téléphone</option>
+                    <option value="service">Service</option>
+                    <option value="notes">Notes</option>
+                </select>
             </div>
             <div id="day-summary-container"></div>
             <div style="overflow-x: auto;">
@@ -139,6 +199,13 @@
                     <button class="btn-secondary" onclick="setDateRange('all')">Tout</button>
                 </div>
             </div>
+            
+            <div style="text-align:center; margin-bottom:20px;">
+                <button class="export-btn" onclick="exportFullCSV()">📊 Export CSV Complet</button>
+                <button class="export-btn" onclick="exportOrdersCSV()">📋 Export Commandes CSV</button>
+                <button class="export-btn" onclick="exportClientsCSV()">👥 Export Clients CSV</button>
+            </div>
+            
             <div id="repartitionContainer"></div>
         </div>
 
@@ -159,6 +226,7 @@
         <div id="inventaire" class="tab-content hidden">
             <h3 style="color:#1A8FB8; margin-bottom:15px;">📦 Gestion Inventaire</h3>
             <button class="btn-primary" onclick="showAddProductModal()" style="margin-bottom:15px;">+ Ajouter un produit</button>
+            <button class="btn-secondary" onclick="exportInventoryCSV()" style="margin-bottom:15px;">📊 Export Inventaire CSV</button>
             <div id="inventaireContainer"></div>
         </div>
 
@@ -179,6 +247,7 @@
                 </div>
                 <button class="btn-primary" onclick="exportData()" style="background:#4BC0C0">📥 Télécharger Sauvegarde</button>
                 <button class="btn-secondary" onclick="importData()" style="margin-top: 15px; width: 100%;">📤 Restaurer un fichier</button>
+                <button class="btn-secondary" onclick="resetApp()" style="margin-top: 15px; width: 100%; background:#FFCE56; color:#333; border:none;">🔄 Réinitialiser l'application</button>
                 <button class="btn-secondary" onclick="clearAllData()" style="margin-top: 15px; width: 100%; background:#FF6384; color:white; border:none;">🗑️ Effacer toutes les données</button>
             </div>
         </div>
@@ -206,16 +275,21 @@
             { id: 'ink_color', name: 'Encre Couleur', quantity: 5, unit: 'cartouches', minStock: 2, price: 800 }
         ];
 
+        // Initialisation
         document.addEventListener('DOMContentLoaded', () => { 
             initServices(); 
             loadOrders(); 
             setupAutoBackup(); 
             setupAutocomplete(); 
             setupSearchListeners();
+            loadDarkMode();
+            checkUrgentOrders();
+            startAutoBackup();
         });
 
         function setupSearchListeners() {
             document.getElementById('searchOrder')?.addEventListener('input', loadOrders);
+            document.getElementById('searchFilter')?.addEventListener('change', loadOrders);
         }
 
         function initServices() {
@@ -223,14 +297,15 @@
             SERVICES.forEach(s => {
                 const div = document.createElement('div');
                 div.className = 'service-row';
-                div.innerHTML = `<input type="checkbox" style="width:20px" id="check_${s.id}" onchange="toggleService('${s.id}')">
+                div.innerHTML = `
+                    <input type="checkbox" style="width:20px" id="check_${s.id}" onchange="toggleService('${s.id}')">
                     <div style="flex:1"><strong>${s.icon} ${s.name}</strong><br><small>${s.price} Gdes</small></div>
                     <div class="quantity-control hidden" id="qty_${s.id}">
                         <button class="qty-btn" onclick="changeQty('${s.id}', -1)">-</button>
-                        <input type="number" class="qty-input" value="1" id="input_${s.id}" readonly>
+                        <input type="number" class="qty-input" value="1" id="input_${s.id}" min="1" onchange="updateQtyManual('${s.id}', this.value)" style="width:80px;">
                         <button class="qty-btn" onclick="changeQty('${s.id}', 1)">+</button>
-                        <input type="number" style="width:60px;margin-left:5px;padding:5px;border:1px solid #D1EFF9;border-radius:5px" 
-                            placeholder="Remise%" id="discount_${s.id}" onchange="updateTotal()">
+                        <input type="number" style="width:70px;margin-left:5px;padding:5px;border:2px solid #D1EFF9;border-radius:5px" 
+                            placeholder="Remise%" id="discount_${s.id}" onchange="updateTotal()" min="0" max="100">
                     </div>`;
                 container.appendChild(div);
             });
@@ -251,7 +326,21 @@
 
         function changeQty(id, delta) {
             const s = selectedServices.find(s => s.id === id);
-            if (s) { s.quantity = Math.max(1, s.quantity + delta); document.getElementById(`input_${id}`).value = s.quantity; updateTotal(); }
+            if (s) { 
+                s.quantity = Math.max(1, s.quantity + delta); 
+                document.getElementById(`input_${id}`).value = s.quantity; 
+                updateTotal(); 
+            }
+        }
+
+        function updateQtyManual(id, value) {
+            const s = selectedServices.find(s => s.id === id);
+            const qty = parseInt(value) || 1;
+            if (s) { 
+                s.quantity = Math.max(1, qty); 
+                document.getElementById(`input_${id}`).value = s.quantity; 
+                updateTotal(); 
+            }
         }
 
         function updateTotal() {
@@ -310,7 +399,26 @@
             localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
             updateClientData(name, order.clientPhone, order.total);
             
+            // Mise à jour automatique des stocks
+            autoUpdateInventory(order);
+            
             setTimeout(() => location.reload(), 800);
+        }
+
+        // Fonction pour mettre à jour automatiquement l'inventaire
+        function autoUpdateInventory(order) {
+            order.services.forEach(service => {
+                if (service.serviceName.includes('Copie') || service.serviceName.includes('Impression')) {
+                    const paperItem = inventory.find(i => i.name === 'Papier A4');
+                    if (paperItem) {
+                        paperItem.quantity = Math.max(0, paperItem.quantity - service.quantity);
+                        if (paperItem.quantity <= paperItem.minStock) {
+                            showNotification(`⚠️ Stock papier faible: ${paperItem.quantity} feuilles`, 5000);
+                        }
+                    }
+                }
+            });
+            localStorage.setItem('wozoprint_inventory', JSON.stringify(inventory));
         }
 
         function loadOrders() {
@@ -320,12 +428,26 @@
             let todayOrders = orders.filter(o => o.date.startsWith(today)).reverse();
             
             const searchTerm = document.getElementById('searchOrder')?.value.toLowerCase() || '';
+            const filterType = document.getElementById('searchFilter')?.value || 'all';
+            
             if (searchTerm) {
-                todayOrders = todayOrders.filter(o => 
-                    o.clientName.toLowerCase().includes(searchTerm) ||
-                    o.clientPhone.toLowerCase().includes(searchTerm) ||
-                    o.services.some(s => s.serviceName.toLowerCase().includes(searchTerm))
-                );
+                todayOrders = todayOrders.filter(o => {
+                    switch(filterType) {
+                        case 'client':
+                            return o.clientName.toLowerCase().includes(searchTerm);
+                        case 'phone':
+                            return o.clientPhone.toLowerCase().includes(searchTerm);
+                        case 'service':
+                            return o.services.some(s => s.serviceName.toLowerCase().includes(searchTerm));
+                        case 'notes':
+                            return (o.notes || '').toLowerCase().includes(searchTerm);
+                        default:
+                            return o.clientName.toLowerCase().includes(searchTerm) ||
+                                   o.clientPhone.toLowerCase().includes(searchTerm) ||
+                                   o.services.some(s => s.serviceName.toLowerCase().includes(searchTerm)) ||
+                                   (o.notes || '').toLowerCase().includes(searchTerm);
+                    }
+                });
             }
             
             if (currentFilter === 'pending') {
@@ -433,6 +555,7 @@
             const paidOrders = orders.filter(o => o.status === 'Payé');
             const serviceStats = calculateServiceStats(paidOrders);
             const paymentStats = calculatePaymentStats(paidOrders);
+            const detailedReport = generateDetailedReport();
             
             document.getElementById('repartitionContainer').innerHTML = `
                 <div style="text-align:center; margin-bottom:20px;">
@@ -481,6 +604,28 @@
                     </div>
                 </div>
 
+                <div style="background:#E8F7FC; padding:15px; border-radius:10px; margin:20px 0;">
+                    <h3 style="color:#1A8FB8; margin:0 0 10px 0;">📈 Statistiques Générales</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                        <div class="stat-card" style="background:linear-gradient(135deg, #21B5DE, #1A8FB8);">
+                            <div style="font-size:1.5em; font-weight:bold;">${detailedReport.summary.totalOrders}</div>
+                            <div style="font-size:0.9em;">Commandes totales</div>
+                        </div>
+                        <div class="stat-card" style="background:linear-gradient(135deg, #4BC0C0, #36A2EB);">
+                            <div style="font-size:1.5em; font-weight:bold;">${detailedReport.summary.totalRevenue} G</div>
+                            <div style="font-size:0.9em;">Revenu total</div>
+                        </div>
+                        <div class="stat-card" style="background:linear-gradient(135deg, #FFCE56, #FF6384);">
+                            <div style="font-size:1.5em; font-weight:bold;">${detailedReport.summary.averageOrderValue} G</div>
+                            <div style="font-size:0.9em;">Moyenne par commande</div>
+                        </div>
+                        <div class="stat-card" style="background:linear-gradient(135deg, #36A2EB, #4BC0C0);">
+                            <div style="font-size:1.5em; font-weight:bold;">${Object.keys(detailedReport.topClients).length}</div>
+                            <div style="font-size:0.9em;">Clients actifs</div>
+                        </div>
+                    </div>
+                </div>
+
                 <h3 style="color:#1A8FB8; margin:20px 0 10px 0; border-bottom:2px solid #E8F7FC; padding-bottom:5px;">📊 Statistiques par Service</h3>
                 <div class="service-stats">
                     ${Object.entries(serviceStats).map(([name, data]) => `
@@ -504,6 +649,19 @@
                             <div style="font-size:0.85em; color:#999;">transactions</div>
                             <div style="font-size:1.2em; font-weight:bold; margin-top:5px;">${data.total} G</div>
                             <div style="font-size:0.85em; color:#999;">${Math.round(data.total/t.total*100)}%</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h3 style="color:#1A8FB8; margin:20px 0 10px 0; border-bottom:2px solid #E8F7FC; padding-bottom:5px;">👥 Top 5 Clients</h3>
+                <div style="background:#F8FDFF; padding:15px; border-radius:10px; margin-bottom:20px;">
+                    ${Object.entries(detailedReport.topClients).slice(0, 5).map(([client, data]) => `
+                        <div style="padding:10px; border-bottom:1px solid #E8F7FC; display:flex; justify-content:space-between;">
+                            <div>
+                                <strong>${client}</strong><br>
+                                <small style="color:#999">${data.ordersCount} commandes</small>
+                            </div>
+                            <div style="font-weight:bold; color:#21B5DE;">${data.totalSpent} G</div>
                         </div>
                     `).join('')}
                 </div>
@@ -535,6 +693,54 @@
                     } 
                 } 
             });
+        }
+
+        function generateDetailedReport() {
+            const paidOrders = orders.filter(o => o.status === 'Payé');
+            const startDate = document.getElementById('startDate')?.value;
+            const endDate = document.getElementById('endDate')?.value;
+            
+            let filteredOrders = paidOrders;
+            if (startDate) {
+                filteredOrders = filteredOrders.filter(o => new Date(o.date) >= new Date(startDate));
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59);
+                filteredOrders = filteredOrders.filter(o => new Date(o.date) <= end);
+            }
+            
+            const report = {
+                period: { start: startDate || 'Début', end: endDate || "Aujourd'hui" },
+                summary: {
+                    totalOrders: filteredOrders.length,
+                    totalRevenue: filteredOrders.reduce((sum, o) => sum + o.total, 0),
+                    averageOrderValue: filteredOrders.length > 0 ? 
+                        Math.round(filteredOrders.reduce((sum, o) => sum + o.total, 0) / filteredOrders.length) : 0
+                },
+                topClients: {},
+                generatedAt: new Date().toISOString()
+            };
+            
+            // Top clients
+            filteredOrders.forEach(order => {
+                if (!report.topClients[order.clientName]) {
+                    report.topClients[order.clientName] = {
+                        ordersCount: 0,
+                        totalSpent: 0
+                    };
+                }
+                report.topClients[order.clientName].ordersCount++;
+                report.topClients[order.clientName].totalSpent += order.total;
+            });
+            
+            // Trier les clients par dépense totale
+            report.topClients = Object.fromEntries(
+                Object.entries(report.topClients)
+                    .sort((a, b) => b[1].totalSpent - a[1].totalSpent)
+            );
+            
+            return report;
         }
 
         function calculateServiceStats(paidOrders) {
@@ -743,7 +949,8 @@
             const phoneInput = document.getElementById('clientPhone');
             const list = document.getElementById('autocompleteList');
             
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function(e) {
+                e.stopPropagation();
                 const val = this.value.toLowerCase().trim();
                 
                 if (val.length < 1) {
@@ -768,8 +975,24 @@
                 list.style.display = 'block';
             });
             
+            input.addEventListener('focus', function() {
+                if (this.value.trim().length > 0) {
+                    const val = this.value.toLowerCase().trim();
+                    const matches = clients.filter(c => c.name.toLowerCase().includes(val));
+                    if (matches.length > 0) {
+                        list.innerHTML = matches.map(c => `
+                            <div class="autocomplete-item" onclick="selectClient('${c.name.replace(/'/g, "\\'")}', '${c.phone || ''}')">
+                                <strong>${c.name}</strong><br>
+                                <small>${c.phone || 'Pas de téléphone'} • ${c.total} Gdes • ${c.count} achats</small>
+                            </div>
+                        `).join('');
+                        list.style.display = 'block';
+                    }
+                }
+            });
+            
             input.addEventListener('blur', function() {
-                setTimeout(() => list.style.display = 'none', 200);
+                setTimeout(() => list.style.display = 'none', 300);
             });
             
             document.getElementById('searchClient')?.addEventListener('input', function() {
@@ -868,8 +1091,11 @@
                                     `).join('')}
                                 </div>
                                 ${o.notes ? `<div style="background:#F8FDFF; padding:8px; border-radius:5px; font-size:0.85em; margin-top:8px;">📝 ${o.notes}</div>` : ''}
-                                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #E8F7FC; text-align:right;">
-                                    <strong style="font-size:1.1em; color:#21B5DE;">Total: ${o.total} Gdes</strong>
+                                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #E8F7FC;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="font-size:1.1em; color:#21B5DE;">Total: ${o.total} Gdes</strong>
+                                        <button class="btn-secondary" onclick="deleteOrderFromHistory(${o.id})" style="background:#FF6384; color:white; border:none; padding:5px 10px;">🗑️ Supprimer</button>
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -897,6 +1123,198 @@
             clients = clients.filter(c => c.name !== name);
             localStorage.setItem('wozoprint_clients', JSON.stringify(clients));
             loadClients();
+            showNotification('✅ Client supprimé!');
+        }
+
+        function deleteOrderFromHistory(orderId) {
+            if (!confirm('Supprimer cette commande de l\'historique ?')) return;
+            
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            if (order.status === 'Payé') {
+                correctRepartition(order.total);
+                updateClientData(order.clientName, order.clientPhone, -order.total);
+            }
+            
+            orders = orders.filter(o => o.id !== orderId);
+            localStorage.setItem('wozoprint_orders', JSON.stringify(orders));
+            
+            closeModal();
+            showNotification('✅ Commande supprimée!');
+            
+            setTimeout(() => {
+                if (document.getElementById('ventes').classList.contains('hidden')) {
+                    loadClients();
+                }
+            }, 500);
+        }
+
+        // ==================== NOUVELLES FONCTIONNALITÉS ====================
+
+        // 1. Mode sombre
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('wozoprint_dark_mode', isDark);
+            document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+        }
+
+        function loadDarkMode() {
+            const isDark = localStorage.getItem('wozoprint_dark_mode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').textContent = '☀️';
+            }
+        }
+
+        // 2. Sauvegarde automatique améliorée
+        function startAutoBackup() {
+            // Sauvegarde toutes les 30 minutes
+            setInterval(() => {
+                setupAutoBackup();
+            }, 30 * 60 * 1000);
+        }
+
+        function setupAutoBackup() {
+            const now = new Date();
+            const lastBackup = localStorage.getItem('wozoprint_last_backup');
+            
+            if (!lastBackup || (now - new Date(lastBackup)) > 23 * 60 * 60 * 1000) {
+                const backupData = {
+                    orders,
+                    clients,
+                    inventory,
+                    services: SERVICES,
+                    backupDate: now.toISOString(),
+                    version: '2.0'
+                };
+                
+                try {
+                    localStorage.setItem('wozoprint_auto_backup', JSON.stringify(backupData));
+                    localStorage.setItem('wozoprint_last_backup', now.toISOString());
+                    console.log('✅ Sauvegarde automatique effectuée');
+                } catch(e) {
+                    console.error('Erreur sauvegarde auto:', e);
+                }
+            }
+        }
+
+        // 3. Vérification des commandes urgentes
+        function checkUrgentOrders() {
+            const urgentOrders = orders.filter(o => 
+                o.status === 'À livrer' && 
+                new Date(o.date) < new Date(Date.now() - 2 * 60 * 60 * 1000)
+            );
+            
+            if (urgentOrders.length > 0) {
+                showNotification(`⚠️ ${urgentOrders.length} commande(s) en attente depuis plus de 2h`, 5000);
+            }
+        }
+
+        // 4. Export CSV
+        function exportFullCSV() {
+            const paidOrders = orders.filter(o => o.status === 'Payé');
+            const csvContent = generateFullCSVReport(paidOrders);
+            downloadCSV(csvContent, `wozoprint_complet_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportOrdersCSV() {
+            const csvContent = generateOrdersCSV();
+            downloadCSV(csvContent, `wozoprint_commandes_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportClientsCSV() {
+            const csvContent = generateClientsCSV();
+            downloadCSV(csvContent, `wozoprint_clients_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportInventoryCSV() {
+            const csvContent = generateInventoryCSV();
+            downloadCSV(csvContent, `wozoprint_inventaire_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function generateFullCSVReport(paidOrders) {
+            let csv = 'Date,Client,Téléphone,Service,Quantité,Prix unitaire,Remise%,Total,Paiement,Statut\n';
+            
+            paidOrders.forEach(order => {
+                order.services.forEach(service => {
+                    csv += `"${new Date(order.date).toLocaleDateString('fr-FR')}",`;
+                    csv += `"${order.clientName}",`;
+                    csv += `"${order.clientPhone}",`;
+                    csv += `"${service.serviceName}",`;
+                    csv += `${service.quantity},`;
+                    csv += `${service.price},`;
+                    csv += `${service.discount || 0},`;
+                    csv += `${Math.round(service.price * service.quantity * (1 - (service.discount || 0) / 100))},`;
+                    csv += `"${order.paymentMethod}",`;
+                    csv += `"${order.status}"\n`;
+                });
+            });
+            
+            return csv;
+        }
+
+        function generateOrdersCSV() {
+            let csv = 'ID,Date,Client,Téléphone,Total,Statut,Paiement,Notes\n';
+            
+            orders.forEach(order => {
+                csv += `${order.id},`;
+                csv += `"${new Date(order.date).toLocaleString('fr-FR')}",`;
+                csv += `"${order.clientName}",`;
+                csv += `"${order.clientPhone}",`;
+                csv += `${order.total},`;
+                csv += `"${order.status}",`;
+                csv += `"${order.paymentMethod}",`;
+                csv += `"${order.notes || ''}"\n`;
+            });
+            
+            return csv;
+        }
+
+        function generateClientsCSV() {
+            let csv = 'Client,Téléphone,Total acheté,Nombre d\'achats,Balance\n';
+            
+            clients.forEach(client => {
+                csv += `"${client.name}",`;
+                csv += `"${client.phone || ''}",`;
+                csv += `${client.total},`;
+                csv += `${client.count},`;
+                csv += `${client.balance || 0}\n`;
+            });
+            
+            return csv;
+        }
+
+        function generateInventoryCSV() {
+            let csv = 'Produit,Quantité,Unité,Stock minimum,Prix unitaire,Valeur stock\n';
+            
+            inventory.forEach(item => {
+                csv += `"${item.name}",`;
+                csv += `${item.quantity},`;
+                csv += `"${item.unit}",`;
+                csv += `${item.minStock},`;
+                csv += `${item.price},`;
+                csv += `${item.quantity * item.price}\n`;
+            });
+            
+            return csv;
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('✅ Fichier CSV téléchargé!');
         }
 
         function updateBackupStats() {
@@ -910,27 +1328,6 @@
             
             document.getElementById('ordersCount').textContent = orders.length;
             document.getElementById('clientsCount').textContent = clients.length;
-        }
-
-        function setupAutoBackup() {
-            const lastBackup = localStorage.getItem('wozoprint_last_backup');
-            const now = new Date();
-            
-            if (!lastBackup || (now - new Date(lastBackup)) > 23 * 60 * 60 * 1000) {
-                const data = { 
-                    orders, 
-                    clients, 
-                    repartition: JSON.parse(localStorage.getItem('wozoprint_repartition')) 
-                };
-                
-                try {
-                    localStorage.setItem('wozoprint_auto_backup', JSON.stringify(data));
-                    localStorage.setItem('wozoprint_last_backup', now.toISOString());
-                    console.log('Sauvegarde automatique effectuée');
-                } catch(e) {
-                    console.error('Erreur sauvegarde auto:', e);
-                }
-            }
         }
 
         function exportData() {
@@ -973,6 +1370,28 @@
             
             localStorage.clear();
             showNotification('✅ Toutes les données ont été effacées');
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        function resetApp() {
+            if (!confirm('🔄 RÉINITIALISATION\n\nCela va:\n• Supprimer TOUTES les commandes\n• Supprimer TOUS les clients\n• Supprimer TOUS les rapports\n• RÉINITIALISER l\'inventaire aux valeurs par défaut\n\nContinuer?')) return;
+            
+            if (!confirm('Dernière confirmation: Réinitialiser l\'application?')) return;
+            
+            const defaultInventory = [
+                { id: 'paper_a4', name: 'Papier A4', quantity: 500, unit: 'feuilles', minStock: 100, price: 2 },
+                { id: 'ink_black', name: 'Encre Noir', quantity: 10, unit: 'cartouches', minStock: 2, price: 500 },
+                { id: 'ink_color', name: 'Encre Couleur', quantity: 5, unit: 'cartouches', minStock: 2, price: 800 }
+            ];
+            
+            localStorage.setItem('wozoprint_orders', JSON.stringify([]));
+            localStorage.setItem('wozoprint_clients', JSON.stringify([]));
+            localStorage.setItem('wozoprint_repartition', JSON.stringify([]));
+            localStorage.setItem('wozoprint_inventory', JSON.stringify(defaultInventory));
+            localStorage.removeItem('wozoprint_auto_backup');
+            localStorage.removeItem('wozoprint_last_backup');
+            
+            showNotification('✅ Application réinitialisée!');
             setTimeout(() => location.reload(), 1000);
         }
 
@@ -1164,7 +1583,7 @@
             window.print();
         }
 
-        function showNotification(message) {
+        function showNotification(message, duration = 3000) {
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
             
@@ -1173,7 +1592,7 @@
             notif.textContent = message;
             document.body.appendChild(notif);
             
-            setTimeout(() => notif.remove(), 3000);
+            setTimeout(() => notif.remove(), duration);
         }
     </script>
 </body>
